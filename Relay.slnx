@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Relay.Cdk/Relay.Cdk.csproj" />
+    <Project Path="src/Relay.AdminApi/Relay.AdminApi.csproj" />
+    <Project Path="src/Relay.AgentApi/Relay.AgentApi.csproj" />
+    <Project Path="src/Relay.Core/Relay.Core.csproj" />
+    <Project Path="src/Relay.Infrastructure/Relay.Infrastructure.csproj" />
+  </Folder>
+</Solution>
