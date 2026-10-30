@@ -24,6 +24,15 @@ The launch profiles use `http://localhost:5100` (admin) and `http://localhost:52
 
 Both APIs use `Amazon.Lambda.AspNetCoreServer.Hosting` with API Gateway HTTP API events and can run locally with Kestrel. Publish each API separately for deployment to its own Lambda. CDK packaging, Lambda resources, gateways, IAM roles, and authentication configuration remain to be implemented. Only the public health endpoint is currently mapped; configure authentication and authorization before adding protected operations.
 
+## Design documents
+
+The [product specification](docs/product-spec.md) defines v1 behavior.
+[ADR 0001](docs/adr/0001-v1-storage-and-consistency.md) records storage keys,
+indexes, revision/transaction boundaries and recoverable deployment snapshots.
+The [v1 HTTP contract](docs/api-v1.md) defines routes, DTOs, permissions,
+decision reasons and resource limits for subsequent implementation issues.
+These are implementation decisions, not a claim that the planned features exist.
+
 ## Testing and CI
 
 Install the .NET 10 SDK and allow NuGet access for the initial restore. `global.json`

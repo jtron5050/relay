@@ -2,6 +2,14 @@
 
 Status: proposed blueprint · Version: 1.0 · October 27, 2026
 
+Implementation design: [ADR 0001 — storage and consistency](adr/0001-v1-storage-and-consistency.md)
+and the [v1 HTTP contract](api-v1.md) resolve the architecture recommendations,
+physical keys, transactions and wire conventions below. They preserve the
+confirmed product requirements and describe planned behavior, not implemented
+capabilities. In particular, pin provenance is `selection.source=pin`, and an
+offer's policy revision is an opaque revision-vector token; the examples below
+remain illustrative.
+
 ## 1. Purpose
 
 Relay distributes your company's application updates to customer computers. Its promise is **the right release, on the right computers, with an accountable rollout history**. It connects publishing intent to observed installation outcomes without requiring operators to contact each customer machine.
