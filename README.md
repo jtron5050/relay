@@ -63,8 +63,9 @@ curl --fail-with-body http://localhost:5200/health
 
 The [CI workflow](.github/workflows/ci.yml) runs on pushes, pull requests, and manual
 dispatch. It installs .NET 10, restores and builds the entire solution, and runs
-both test projects; any failed step fails the job. The workflow requires no
-repository secrets and has read-only repository access. Add feature-specific test
+all test projects, including DynamoDB Local integration tests; any failed step
+fails the job. The workflow requires no repository secrets and has read-only
+repository access. Add feature-specific test
 projects under `tests/` to `Relay.slnx` as business behavior is implemented.
 
 ### Implemented HTTP conventions
@@ -72,3 +73,7 @@ projects under `tests/` to `Relay.slnx` as business behavior is implemented.
 Both hosts publish their implemented OpenAPI surface at `GET /openapi/v1.json`.
 See [HTTP safety and extension guidance](docs/http-safety.md) for error handling,
 validation helpers, cursor key configuration, and the boundary with future features.
+
+### Persistence foundation
+
+DynamoDB persistence setup and integration tests: [persistence foundation](docs/persistence.md).
