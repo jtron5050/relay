@@ -9,4 +9,10 @@
     <ProjectReference Include="../Relay.Infrastructure/Relay.Infrastructure.csproj" />
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="2.2.1" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../SharedApi/*.cs" Link="Http/%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="openapi.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
