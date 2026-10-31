@@ -18,4 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Relay.AdminApi/Relay.AdminApi.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../SharedApi/*.cs" Link="%(Filename)%(Extension)" />
+  </ItemGroup>
 </Project>
