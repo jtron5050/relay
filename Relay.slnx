@@ -7,6 +7,7 @@
     <Project Path="src/Relay.Infrastructure/Relay.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Relay.Infrastructure.Tests/Relay.Infrastructure.Tests.csproj" />
     <Project Path="tests/Relay.AdminApi.Tests/Relay.AdminApi.Tests.csproj" />
     <Project Path="tests/Relay.AgentApi.Tests/Relay.AgentApi.Tests.csproj" />
   </Folder>

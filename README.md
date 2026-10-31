@@ -66,3 +66,5 @@ dispatch. It installs .NET 10, restores and builds the entire solution, and runs
 both test projects; any failed step fails the job. The workflow requires no
 repository secrets and has read-only repository access. Add feature-specific test
 projects under `tests/` to `Relay.slnx` as business behavior is implemented.
+
+DynamoDB persistence setup and integration tests: [persistence foundation](docs/persistence.md).
