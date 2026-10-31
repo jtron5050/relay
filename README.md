@@ -66,3 +66,9 @@ dispatch. It installs .NET 10, restores and builds the entire solution, and runs
 both test projects; any failed step fails the job. The workflow requires no
 repository secrets and has read-only repository access. Add feature-specific test
 projects under `tests/` to `Relay.slnx` as business behavior is implemented.
+
+### Implemented HTTP conventions
+
+Both hosts publish their implemented OpenAPI surface at `GET /openapi/v1.json`.
+See [HTTP safety and extension guidance](docs/http-safety.md) for error handling,
+validation helpers, cursor key configuration, and the boundary with future features.
