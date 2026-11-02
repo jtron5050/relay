@@ -16,8 +16,8 @@ Register `services.AddRelayPersistence(configuration)` with:
 
 Production uses the standard AWS SDK credential chain and regional HTTPS. Supply
 least-privilege GetItem, Query, TransactGetItems and TransactWriteItems permissions
-on the configured table and Query on its indexes. No table is provisioned by this
-slice; provisioning belongs to #6. The table requires string PK/SK, sparse string
+on the configured table and Query on its indexes. The CDK foundation provisions
+the table; see [infrastructure](infrastructure.md). The table requires string PK/SK, sparse string
 GSI1PK/GSI1SK and GSI2PK/GSI2SK indexes, and optional TTL on numeric `expiresAt`.
 Indexes may use the ADR's restricted projections: the adapter rehydrates listed
 rows by strongly reading their base keys. Index membership remains eventual and

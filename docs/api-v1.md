@@ -57,6 +57,10 @@ Later feature issues implement and test these contracts incrementally.
 ## Permission matrix
 
 All Admin routes require a Cognito access token and the exact operation permission.
+Cognito group claims map `Administrator` → Administrator, `ReleaseOperator` →
+Release operator, and `SupportViewer` → Support viewer (Cognito names cannot
+contain spaces). See [staff administration](infrastructure.md#staff-access-administration).
+
 Roles are additive allowlists; absent/unknown roles grant nothing. Staff operate
 the internal fleet globally in v1; customer IDs do not represent customer login
 scopes. Future tenant-scoped staff access requires a new permission model.
