@@ -13,7 +13,7 @@ public class HealthTests
     [InlineData("Production")]
     public async Task GetHealth_WithoutCredentials_ReturnsHealthyJson(string environment)
     {
-        await using var factory = new WebApplicationFactory<Program>()
+        await using var factory = new ApiTestFactory()
             .WithWebHostBuilder(builder => builder.UseEnvironment(environment));
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {

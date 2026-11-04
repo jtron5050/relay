@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="../Relay.Core/Relay.Core.csproj" />
     <ProjectReference Include="../Relay.Infrastructure/Relay.Infrastructure.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="2.2.1" />
   </ItemGroup>
   <ItemGroup>

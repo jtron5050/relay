@@ -18,7 +18,7 @@ public class ConventionsTests
     [InlineData("Production")]
     public async Task ErrorsAreSafeAndCorrelated(string environment)
     {
-        await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b =>
+        await using var factory = new ApiTestFactory().WithWebHostBuilder(b =>
             b.UseEnvironment(environment).ConfigureServices(s => s.AddSingleton<IStartupFilter, ProbeFilter>()));
         using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
         foreach (var status in new[] { 400, 401, 403, 404, 405, 409, 410, 413, 415, 428, 429, 503 })
@@ -36,8 +36,9 @@ public class ConventionsTests
             Assert.DoesNotContain("secret", await response.Content.ReadAsStringAsync());
         }
         using var unknown = await client.GetAsync("/v1/inaccessible");
-        Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
-        Assert.Equal("notFound", (await unknown.Content.ReadFromJsonAsync<ApiError>())!.Code);
+        var admin = typeof(Program).Assembly.GetName().Name == "Relay.AdminApi";
+        Assert.Equal(admin ? HttpStatusCode.Unauthorized : HttpStatusCode.NotFound, unknown.StatusCode);
+        Assert.Equal(admin ? "unauthorized" : "notFound", (await unknown.Content.ReadFromJsonAsync<ApiError>())!.Code);
         using var oversized = await client.PostAsync("/probe/body", new StringContent(new string('x', 262145)));
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, oversized.StatusCode);
         foreach (var payload in new[] { "{", "{\"name\":\"ok\",\"unexpected\":true}" })
@@ -100,23 +101,22 @@ public class ConventionsTests
     {
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
         {
+            app.UseRouting();
             next(app);
-            app.Use(async (context, continuation) =>
+            app.UseEndpoints(endpoints =>
             {
-                if (context.Request.Path.StartsWithSegments("/probe", out var remaining) &&
-                    int.TryParse(remaining.Value?.Trim('/'), out var status))
+                endpoints.MapGet("/probe/{status:int}", async context =>
                 {
+                    var status = int.Parse(context.Request.RouteValues["status"]!.ToString()!);
                     if (status == 503) throw new InvalidOperationException("secret credential https://private");
                     context.Response.StatusCode = status;
-                    return;
-                }
-                if (context.Request.Path == "/probe/json")
+                    await Task.CompletedTask;
+                }).AllowAnonymous();
+                endpoints.MapPost("/probe/json", async context =>
                 {
                     await context.Request.ReadFromJsonAsync<ProbeRequest>();
                     context.Response.StatusCode = 204;
-                    return;
-                }
-                await continuation(context);
+                }).AllowAnonymous();
             });
         };
     }
