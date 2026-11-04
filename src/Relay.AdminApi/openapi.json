@@ -28,6 +28,24 @@
               }
             }
           }
+        },
+        "security": []
+      }
+    },
+    "/openapi/v1.json": {
+      "get": {
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Implemented OpenAPI document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -57,6 +75,14 @@
             "type": "boolean"
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "staffBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Cognito staff access token. Each protected operation requires its named Relay permission."
       }
     }
   },

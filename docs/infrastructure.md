@@ -2,7 +2,7 @@
 
 Issue [#6](https://github.com/jtron5050/relay/issues/6) provisions only the data and
 staff identity foundation. It does not deploy the APIs, IAM workload roles,
-archive workers, artifact publication, or JWT authorization. The API hosts still
+archive workers, artifact publication, or API deployment. Issue #7 adds Admin JWT authorization. The API hosts still
 expose their existing public health/conventions surface.
 
 ## Synthesis and tests
@@ -100,8 +100,8 @@ Grant these Cognito administrative actions only to authorized identity operators
 scoped to the pool ARN; normal staff groups do not imply identity administration.
 This stack creates no initial administrator or administrative IAM principal.
 Cognito group names cannot contain spaces: `ReleaseOperator` maps to the product
-role “Release operator” and `SupportViewer` to “Support viewer”. Future API role
-mapping must use these exact claim values.
+role “Release operator” and `SupportViewer` to “Support viewer”. API role
+mapping uses these exact claim values.
 
 Changes to staff access should be monitored through the organization's CloudTrail
 and identity operations process; this slice does not provision that pipeline.
@@ -111,11 +111,10 @@ hides user-existence errors and enables token revocation. Access/ID tokens last
 15 minutes; refresh tokens last eight hours; authentication challenges last three
 minutes. Tooling should retain tokens only in protected storage and clear them
 on sign-out. Offline JWT validation cannot detect revocation or group changes
-until token expiry without an additional authoritative check. Future Admin API
-authorization must validate signature/JWKS, issuer, `token_use=access`, expiry,
+until token expiry without an additional authoritative check. Admin API
+authorization validates signature/JWKS, issuer, `token_use=access`, expiry,
 allowed `client_id`, required scopes and exact Relay groups/permissions. An ID
-token is never an API credential. Authentication/authorization remains a separate
-backlog slice; no protected routes are added here.
+token is never an API credential. Issue #7 implements authentication/authorization in the host; no business routes are added yet.
 
 ## Future browser client / PKCE
 
@@ -136,3 +135,11 @@ wildcard production callbacks. Review the staff token/session policy at that tim
 are configuration identifiers. Use the table name for `DynamoOptions.TableName`;
 future API provisioning consumes the pool issuer and allowed client ID.
 No passwords, client secrets, credentials, signed URLs or user data are output.
+
+## Admin API integration
+
+Issue #7 implements JWT validation and operation permissions in the Admin host.
+Set `StaffAuthentication:Issuer` from `StaffIssuer` and
+`StaffAuthentication:ClientId` from `StaffClientId` before starting it. See
+[staff authentication](staff-authentication.md) for configuration and behavior.
+No API deployment or additional Cognito resources are introduced.

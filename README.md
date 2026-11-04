@@ -16,13 +16,13 @@ Both API hosts reference Core and Infrastructure. Keep HTTP contracts and authen
 
 ```sh
 dotnet build Relay.slnx
-dotnet run --project src/Relay.AdminApi
+StaffAuthentication__Issuer=https://cognito-idp.REGION.amazonaws.com/POOL_ID StaffAuthentication__ClientId=CLIENT_ID dotnet run --project src/Relay.AdminApi
 dotnet run --project src/Relay.AgentApi
 ```
 
 The launch profiles use `http://localhost:5100` (admin) and `http://localhost:5200` (agent). Each exposes `GET /health`.
 
-Both APIs use `Amazon.Lambda.AspNetCoreServer.Hosting` with API Gateway HTTP API events and can run locally with Kestrel. Publish each API separately for deployment to its own Lambda. CDK packaging, Lambda resources, gateways, IAM roles, and authentication configuration remain to be implemented. Only the public health endpoint is currently mapped; configure authentication and authorization before adding protected operations.
+Both APIs use `Amazon.Lambda.AspNetCoreServer.Hosting` with API Gateway HTTP API events and can run locally with Kestrel. Publish each API separately for deployment to its own Lambda. CDK packaging, Lambda resources, gateways, IAM roles, and Agent authentication configuration remain to be implemented. The Admin host validates Cognito staff access tokens and denies routes without an explicit operation permission. Health and OpenAPI remain public. See [staff authentication](docs/staff-authentication.md) for required startup settings.
 
 ## Design documents
 
@@ -52,6 +52,14 @@ an unauthenticated `GET /health` returns HTTP 200, JSON content, and
 `{"status":"healthy"}`. The clients use an HTTPS base address and disable redirects
 so a redirect cannot hide a route failure. No running APIs, trusted development
 certificate, AWS credentials, Docker, or deployed resources are required.
+
+Authentication integration tests share an xUnit class fixture and exercise the real
+JWT validation and authorization pipeline with locally signed tokens and test
+signing-key discovery. The key-rotation scenario uses a separate host to isolate
+its mutable state. Test factories clear logging providers to keep expected token
+and request failures out of the terminal; temporarily remove `ClearProviders()`
+in `tests/SharedApi/ApiTestFactory.cs` to inspect host logs while debugging.
+The startup-validation test separately clears logging on its standalone host.
 
 To check the local Kestrel endpoints separately, start each API with the development
 commands above, then run:

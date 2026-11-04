@@ -20,7 +20,7 @@ return retryable 503, never application removal instructions. Exception text,
 request bodies, and credentials are not logged. 429/503 and explicitly retryable
 conflicts include `Retry-After: 5`. Resource handlers must return the same 404 for
 missing and inaccessible resources; 403 is reserved for known permission denial.
-Authentication implementations remain in later issues.
+Admin authentication is implemented by issue #7; Agent authentication remains a later issue.
 
 Future handlers must call `RequireOpaqueId`, `RequireRevision`,
 `RequireIdempotencyKey`, `Pagination`, and `ValidateBatch` as applicable.
@@ -62,3 +62,8 @@ Verified on 2026-10-31 with SDK 10.0.403:
 - Started both Release Kestrel hosts on ports 5100/5200 and verified `/health`,
   `/openapi/v1.json`, and safe correlated `/v1/missing` 404 responses; stopped both.
 - `git diff --check`: passed.
+
+Issue #7 adds [Admin staff authentication](staff-authentication.md). Admin default
+and fallback authorization now deny unmatched requests with 401/403; Agent unknown
+routes retain 404 behavior. Only health/OpenAPI are anonymous in Admin. Existing
+request limits and safe error handling remain in force.
