@@ -19,7 +19,9 @@ public class ApiTestFactory : WebApplicationFactory<Program>
                 new Dictionary<string, string?>
                 {
                     ["StaffAuthentication:Issuer"] = "https://staff.example.test/pool",
-                    ["StaffAuthentication:ClientId"] = "test-client"
+                    ["StaffAuthentication:ClientId"] = "test-client",
+                    ["DynamoDb:TableName"] = "relay-tests",
+                    ["DynamoDb:LocalEndpoint"] = "http://localhost:8000"
                 }));
     }
 }

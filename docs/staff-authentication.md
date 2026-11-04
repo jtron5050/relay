@@ -7,6 +7,7 @@ when validating tokens, so startup and public health need no Cognito connection.
 ```sh
 export StaffAuthentication__Issuer=https://cognito-idp.REGION.amazonaws.com/POOL_ID
 export StaffAuthentication__ClientId=CLIENT_ID
+export DynamoDb__TableName=relay-dev
 dotnet run --project src/Relay.AdminApi
 ```
 

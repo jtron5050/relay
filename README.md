@@ -16,7 +16,7 @@ Both API hosts reference Core and Infrastructure. Keep HTTP contracts and authen
 
 ```sh
 dotnet build Relay.slnx
-StaffAuthentication__Issuer=https://cognito-idp.REGION.amazonaws.com/POOL_ID StaffAuthentication__ClientId=CLIENT_ID dotnet run --project src/Relay.AdminApi
+StaffAuthentication__Issuer=https://cognito-idp.REGION.amazonaws.com/POOL_ID StaffAuthentication__ClientId=CLIENT_ID DynamoDb__TableName=relay-dev dotnet run --project src/Relay.AdminApi
 dotnet run --project src/Relay.AgentApi
 ```
 
@@ -91,3 +91,8 @@ DynamoDB persistence setup and integration tests: [persistence foundation](docs/
 See [storage and staff identity infrastructure](docs/infrastructure.md) for CDK
 synthesis, security settings, retention gates, staff administration and future PKCE.
 CDK assertion tests require Node.js; no live resources are deployed by tests.
+
+### Audit history
+
+See [audit history](docs/audit-history.md) for the implemented staff endpoint,
+required DynamoDB configuration, and transactional mutation integration hook.

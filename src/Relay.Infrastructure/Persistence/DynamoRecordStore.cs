@@ -112,7 +112,7 @@ public sealed class DynamoRecordStore(IAmazonDynamoDB client, IOptions<DynamoOpt
                 : await GetAsync(new RecordKey(item["PK"].S, item["SK"].S), cancellationToken);
             if (record is not null) records.Add(record);
         }
-        return new RecordPage(records, next);
+        return new RecordPage(records, next, response.ScannedCount ?? 0);
     }
 
     public async Task WriteAsync(IReadOnlyList<WriteAction> actions, CancellationToken cancellationToken = default)
@@ -163,6 +163,15 @@ public sealed class DynamoRecordStore(IAmazonDynamoDB client, IOptions<DynamoOpt
         catch (TransactionCanceledException e) when (e.CancellationReasons?.Any(r => r.Code == "TransactionConflict") == true)
         { throw new PersistenceConflictException("transactionConflict"); }
         catch (TransactionConflictException) { throw new PersistenceConflictException("transactionConflict"); }
+    }
+
+    public async Task<SafeResult?> ReplayAsync(IdempotencyRequest request, CancellationToken cancellationToken = default)
+    {
+        var key = new RecordKey($"IDEMPOTENCY#{CanonicalJson.HashText(request.Actor)}#{CanonicalJson.HashText(request.Operation)}#{CanonicalJson.HashText(request.Key)}", "META");
+        var hash = "v1:" + CanonicalJson.Hash(JsonSerializer.SerializeToElement(new
+        { input = request.CanonicalInput, permanent = request.Permanent }, Json));
+        var previous = await GetAsync(key, cancellationToken);
+        return previous is null ? null : Replay(previous, hash);
     }
 
     public async Task<SafeResult> ExecuteOnceAsync(IdempotencyRequest request, SafeResult result,

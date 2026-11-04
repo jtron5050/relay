@@ -20,7 +20,7 @@ public sealed record CheckRevision(RecordKey RecordKey, long ExpectedRevision) :
 public sealed record KeyedQuery(string ActorScope, string Partition, string SortPrefix,
     int Limit = 50, string? Index = null, bool Descending = false,
     string? SortFrom = null, string? SortTo = null);
-public sealed record RecordPage(IReadOnlyList<StoredRecord> Items, string? NextCursor);
+public sealed record RecordPage(IReadOnlyList<StoredRecord> Items, string? NextCursor, int EvaluatedCount = 0);
 
 // Safe references only: callers must never pass secrets, signed URLs or sensitive diagnostics.
 public sealed record SafeResult(int Status, string ResourceReference, bool SecretIssued = false);
@@ -36,6 +36,7 @@ public interface IRecordStore
         CancellationToken cancellationToken = default);
     Task WriteAsync(IReadOnlyList<WriteAction> actions, CancellationToken cancellationToken = default);
     // Auth/permissions must be revalidated by the caller even on replay. Includes the receipt atomically.
+    Task<SafeResult?> ReplayAsync(IdempotencyRequest request, CancellationToken cancellationToken = default);
     Task<SafeResult> ExecuteOnceAsync(IdempotencyRequest request, SafeResult result,
         IReadOnlyList<WriteAction> actions, CancellationToken cancellationToken = default);
 }

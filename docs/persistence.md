@@ -1,8 +1,8 @@
 # DynamoDB persistence foundation
 
 Issue #5 implements the ports in `Relay.Core/Persistence` and the AWS adapter in
-`Relay.Infrastructure/Persistence`. It adds no HTTP operations and does not yet
-wire either API host to storage. Feature handlers must implement their own
+`Relay.Infrastructure/Persistence`. The foundation adds no HTTP operations. Issue #8 wires Admin to storage for
+[audit history](audit-history.md). Feature handlers must implement their own
 permission, validation, authorization-vector and audit rules from
 [ADR 0001](adr/0001-v1-storage-and-consistency.md).
 
