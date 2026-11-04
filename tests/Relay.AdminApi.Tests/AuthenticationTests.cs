@@ -68,7 +68,7 @@ public class AuthenticationTests(AuthenticationTests.AuthFactory sharedFactory) 
         };
     }
 
-    private static string Token(string[]? groups = null, string variant = "valid")
+    internal static string Token(string[]? groups = null, string variant = "valid")
     {
         var claims = new List<Claim> { new("token_use", variant == "id" ? "id" : "access"), new("client_id", variant == "client" ? "wrong" : "test-client"), new("sub", "staff-subject") };
         if (variant.StartsWith("missing-")) claims.RemoveAll(c => c.Type == variant[8..]);

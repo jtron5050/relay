@@ -1,8 +1,7 @@
 # Relay v1 HTTP contract
 
 Status: decided for implementation by [issue #3](https://github.com/jtron5050/relay/issues/3);
-these routes are **not yet implemented**. The only existing routes are the two
-public `GET /health` endpoints. This contract refines [product spec §§3–6](product-spec.md)
+Most routes remain planned. GET `/v1/audit-events` is implemented; see [audit history](audit-history.md). Both hosts also expose public health and OpenAPI endpoints. This contract refines [product spec §§3–6](product-spec.md)
 and uses [ADR 0001](adr/0001-v1-storage-and-consistency.md) for storage,
 transactions, authorization, idempotency, snapshot jobs and cursor semantics.
 Later feature issues implement and test these contracts incrementally.
