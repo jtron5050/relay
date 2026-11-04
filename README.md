@@ -53,6 +53,14 @@ an unauthenticated `GET /health` returns HTTP 200, JSON content, and
 so a redirect cannot hide a route failure. No running APIs, trusted development
 certificate, AWS credentials, Docker, or deployed resources are required.
 
+Authentication integration tests share an xUnit class fixture and exercise the real
+JWT validation and authorization pipeline with locally signed tokens and test
+signing-key discovery. The key-rotation scenario uses a separate host to isolate
+its mutable state. Test factories clear logging providers to keep expected token
+and request failures out of the terminal; temporarily remove `ClearProviders()`
+in `tests/SharedApi/ApiTestFactory.cs` to inspect host logs while debugging.
+The startup-validation test separately clears logging on its standalone host.
+
 To check the local Kestrel endpoints separately, start each API with the development
 commands above, then run:
 

@@ -8,10 +8,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -21,28 +23,28 @@ using Xunit;
 
 namespace Relay.AdminApi.Tests;
 
-public class AuthenticationTests
+public class AuthenticationTests(AuthenticationTests.AuthFactory sharedFactory) : IClassFixture<AuthenticationTests.AuthFactory>
 {
     private static readonly RsaSecurityKey Key = new(RSA.Create(2048)) { KeyId = "test-key" };
 
-    private static ApiTestFactory Factory() => new AuthFactory();
-
-    private sealed class AuthFactory(RotatingConfiguration? rotation = null) : ApiTestFactory
+    public sealed class AuthFactory : ApiTestFactory
     {
+        public IConfigurationManager<OpenIdConnectConfiguration>? ConfigurationManager { get; init; }
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
-            builder.ConfigureServices(services =>
+            builder.ConfigureTestServices(services =>
             {
                 services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
                 {
                     options.Configuration = new OpenIdConnectConfiguration { Issuer = "https://staff.example.test/pool" };
                     options.Configuration.SigningKeys.Add(Key);
                     options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(options.Configuration);
-                    if (rotation is not null)
+                    if (ConfigurationManager is not null)
                     {
                         options.Configuration = null;
-                        options.ConfigurationManager = rotation;
+                        options.ConfigurationManager = ConfigurationManager;
                     }
                 });
                 services.AddSingleton<IStartupFilter, Routes>();
@@ -96,8 +98,7 @@ public class AuthenticationTests
     [MemberData(nameof(Permissions))]
     public async Task PermissionMatrix(string permission, string group, bool allowed)
     {
-        await using var factory = Factory();
-        using var client = factory.CreateClient(new() { BaseAddress = new("https://localhost") });
+        using var client = sharedFactory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", Token(group.Length == 0 ? [] : [group]));
         using var response = await client.GetAsync("/v1/probe/" + permission);
         Assert.Equal(allowed ? HttpStatusCode.NoContent : HttpStatusCode.Forbidden, response.StatusCode);
@@ -110,8 +111,7 @@ public class AuthenticationTests
     [InlineData("missing-token_use")][InlineData("missing-client_id")][InlineData("missing-sub")][InlineData("missing-exp")]
     public async Task InvalidTokensAreSafe(string variant)
     {
-        await using var factory = Factory();
-        using var client = factory.CreateClient(new() { BaseAddress = new("https://localhost") });
+        using var client = sharedFactory.CreateClient();
         var token = variant == "malformed" ? "secret-token" : Token(["Administrator"], variant);
         client.DefaultRequestHeaders.Authorization = new("Bearer", token);
         var correlation = Guid.NewGuid().ToString();
@@ -126,8 +126,7 @@ public class AuthenticationTests
     [Fact]
     public async Task DefaultsDenyAndGroupsAreAdditive()
     {
-        await using var factory = Factory();
-        using var client = factory.CreateClient(new() { BaseAddress = new("https://localhost") });
+        using var client = sharedFactory.CreateClient();
         foreach (var path in new[] { "/v1/unannotated", "/v1/default", "/v1/missing", "/v1/probe/fleet.read" })
             Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync(path)).StatusCode);
         client.DefaultRequestHeaders.Authorization = new("Bearer", Token(["Administrator"]));
@@ -159,8 +158,8 @@ public class AuthenticationTests
     public async Task UnknownKeyRequestsRefreshAndRemainsDeniedUntilTrusted()
     {
         var configuration = new RotatingConfiguration();
-        await using var factory = new AuthFactory(configuration);
-        using var client = factory.CreateClient(new() { BaseAddress = new("https://localhost") });
+        await using var factory = new AuthFactory { ConfigurationManager = configuration };
+        using var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", Token(["Administrator"]));
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/v1/probe/fleet.read")).StatusCode);
         Assert.True(configuration.Refreshed);
@@ -176,6 +175,7 @@ public class AuthenticationTests
         // WebApplicationFactory's deferred host can dispose its provider before
         // propagating a startup failure. Exercise ValidateOnStart directly instead.
         var builder = Host.CreateApplicationBuilder();
+        builder.Logging.ClearProviders();
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["StaffAuthentication:Issuer"] = issuer, ["StaffAuthentication:ClientId"] = clientId

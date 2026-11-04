@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Relay.Http;
@@ -19,8 +19,8 @@ public class ConventionsTests
     public async Task ErrorsAreSafeAndCorrelated(string environment)
     {
         await using var factory = new ApiTestFactory().WithWebHostBuilder(b =>
-            b.UseEnvironment(environment).ConfigureServices(s => s.AddSingleton<IStartupFilter, ProbeFilter>()));
-        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+            b.UseEnvironment(environment).ConfigureTestServices(s => s.AddSingleton<IStartupFilter, ProbeFilter>()));
+        using var client = factory.CreateClient();
         foreach (var status in new[] { 400, 401, 403, 404, 405, 409, 410, 413, 415, 428, 429, 503 })
         {
             var correlation = Guid.NewGuid().ToString();
