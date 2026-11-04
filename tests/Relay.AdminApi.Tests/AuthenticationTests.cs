@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -170,13 +171,17 @@ public class AuthenticationTests
 
     [Theory]
     [InlineData("", "client")][InlineData("http://staff.test/pool", "client")][InlineData("https://staff.test/pool", "")]
-    public void InvalidConfigurationFailsStartup(string issuer, string clientId)
+    public async Task InvalidConfigurationFailsStartup(string issuer, string clientId)
     {
-        using var factory = new ApiTestFactory().WithWebHostBuilder(b => b.ConfigureAppConfiguration((_, config) =>
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["StaffAuthentication:Issuer"] = issuer, ["StaffAuthentication:ClientId"] = clientId
-            })));
-        Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+        // WebApplicationFactory's deferred host can dispose its provider before
+        // propagating a startup failure. Exercise ValidateOnStart directly instead.
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["StaffAuthentication:Issuer"] = issuer, ["StaffAuthentication:ClientId"] = clientId
+        });
+        builder.Services.AddStaffAuthentication(builder.Configuration);
+        using var host = builder.Build();
+        await Assert.ThrowsAsync<OptionsValidationException>(() => host.StartAsync());
     }
 }
