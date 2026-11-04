@@ -27,9 +27,15 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
+      - name: Set up Node.js for CDK assertions
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
       - name: Restore
         run: dotnet restore Relay.slnx
       - name: Build
         run: dotnet build Relay.slnx --configuration Release --no-restore
       - name: Test
         run: dotnet test Relay.slnx --configuration Release --no-build --no-restore
+      - name: Synthesize infrastructure (no deployment)
+        run: npx --yes aws-cdk@2.1147.0 synth --no-lookups

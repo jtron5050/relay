@@ -8,7 +8,7 @@ Relay is a .NET 10 service for distributing application updates to customer comp
 - `Relay.AgentApi`: updater-agent HTTP endpoints and authentication.
 - `Relay.Core`: shared business models and rules; keep it independent of API and infrastructure projects.
 - `Relay.Infrastructure`: persistence and storage implementations; references Core.
-- `Relay.Cdk`: AWS CDK infrastructure; the stack is currently empty.
+- `Relay.Cdk`: AWS CDK infrastructure; the stack provisions private storage and staff Cognito.
 
 Organize API features into folders such as computers, releases, and deployments. Keep HTTP contracts in the respective API host. Read `docs/product-spec.md` for intended behavior, distinguishing its proposed design from implemented capabilities. No frontend or asset pipeline exists yet.
 
@@ -21,7 +21,7 @@ Use the .NET 10 SDK from the repository root:
 - `dotnet run --project src/Relay.AdminApi`: run the admin API at `http://localhost:5100`.
 - `dotnet run --project src/Relay.AgentApi`: run the agent API at `http://localhost:5200`.
 
-Both APIs expose `GET /health`. The `cdk.json` app path currently references a nonexistent project; correct it before using CDK CLI commands.
+Both APIs expose `GET /health`. `cdk synth --no-lookups` synthesizes the storage/identity foundation; Node.js and the CDK v2 CLI are required.
 
 ## Coding Style & Naming Conventions
 
@@ -29,7 +29,7 @@ Follow existing C# style: four-space indentation, file-scoped namespaces, Pascal
 
 ## Testing Guidelines
 
-No test projects, test framework, or coverage threshold are configured. Add tests under `tests/` as behavior is implemented, using names such as `Relay.Core.Tests` and `ReleaseTests.cs`, and include projects in `Relay.slnx`. Run `dotnet test Relay.slnx` once tests exist. For API changes, verify affected endpoints locally and document results.
+xUnit test projects live under `tests/`; no coverage threshold is configured. Add tests under `tests/` as behavior is implemented, using names such as `Relay.Core.Tests` and `ReleaseTests.cs`, and include projects in `Relay.slnx`. Run `dotnet test Relay.slnx` once tests exist. For API changes, verify affected endpoints locally and document results.
 
 ## Commit & Pull Request Guidelines
 

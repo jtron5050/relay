@@ -1,5 +1,5 @@
 {
-  "app": "dotnet run --project src/Relay/Relay.csproj",
+  "app": "dotnet run --project src/Relay.Cdk/Relay.Cdk.csproj",
   "watch": {
     "include": [
       "**"

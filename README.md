@@ -8,7 +8,7 @@ ASP.NET Core APIs for administrators and computer updater agents, with AWS infra
 - `Relay.AgentApi`: updater agent HTTP API; feature folders for registration, check-in, and update checks.
 - `Relay.Core`: shared business models and rules. No API or infrastructure dependencies.
 - `Relay.Infrastructure`: persistence and storage implementations; references Core.
-- `Relay.Cdk`: AWS infrastructure. The stack is currently empty.
+- `Relay.Cdk`: retained private storage and staff Cognito identity foundation.
 
 Both API hosts reference Core and Infrastructure. Keep HTTP contracts and authentication in their respective hosts. Add shared implementations when actual features need them; the library folders are intentionally empty.
 
@@ -77,3 +77,9 @@ validation helpers, cursor key configuration, and the boundary with future featu
 ### Persistence foundation
 
 DynamoDB persistence setup and integration tests: [persistence foundation](docs/persistence.md).
+
+### Infrastructure foundation
+
+See [storage and staff identity infrastructure](docs/infrastructure.md) for CDK
+synthesis, security settings, retention gates, staff administration and future PKCE.
+CDK assertion tests require Node.js; no live resources are deployed by tests.
