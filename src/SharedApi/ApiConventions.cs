@@ -29,6 +29,11 @@ public static class ApiConventions
         });
         builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = true);
         builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = MaxBodyBytes);
+        // Framework request diagnostics include raw URLs; auth/SDK diagnostics may carry secrets.
+        builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.None);
+        builder.Logging.AddFilter("Microsoft.AspNetCore.Authentication", LogLevel.None);
+        builder.Logging.AddFilter("Microsoft.IdentityModel", LogLevel.None);
+        builder.Logging.AddFilter("Amazon", LogLevel.None);
         builder.Services.AddDataProtection();
         builder.Services.AddSingleton<CursorCodec>();
     }

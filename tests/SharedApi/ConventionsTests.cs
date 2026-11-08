@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Relay.Http;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 public class ConventionsTests
 {
@@ -93,6 +94,45 @@ public class ConventionsTests
         var expired = provider.CreateProtector("Relay.v1.cursor", "actor/query").ToTimeLimitedDataProtector()
             .Protect("position", DateTimeOffset.UtcNow.AddMinutes(-1));
         Assert.Equal(410, Assert.Throws<ApiFailure>(() => codec.Decode(expired, "actor/query")).Status);
+    }
+
+    private sealed class CapturedLogs : ILoggerProvider
+    {
+        public List<string> Messages { get; } = [];
+        public ILogger CreateLogger(string categoryName) => new Sink(this);
+        public void Dispose() { }
+        private sealed class Sink(CapturedLogs owner) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+            public bool IsEnabled(LogLevel level) => true;
+            public void Log<TState>(LogLevel level, EventId eventId, TState state, Exception? exception,
+                Func<TState, Exception?, string> formatter)
+            {
+                lock (owner.Messages) owner.Messages.Add(formatter(state, exception) + exception);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("Development")][InlineData("Production")]
+    public async Task LogsExcludeRequestAndDependencySecrets(string environment)
+    {
+        var logs = new CapturedLogs();
+        await using var factory = new ApiTestFactory().WithWebHostBuilder(b => b.UseEnvironment(environment)
+            .ConfigureLogging(logging => logging.AddProvider(logs).SetMinimumLevel(LogLevel.Information))
+            .ConfigureTestServices(s => s.AddSingleton<IStartupFilter, ProbeFilter>()));
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/probe/503?url=https://private?signature=query-secret");
+        request.Headers.Add("Authorization", "Bearer header-secret");
+        request.Content = new StringContent("body-secret");
+        using var response = await client.SendAsync(request);
+        Assert.Equal(503, (int)response.StatusCode);
+        var all = string.Join("\n", logs.Messages) + await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("query-secret", all);
+        Assert.DoesNotContain("header-secret", all);
+        Assert.DoesNotContain("body-secret", all);
+        Assert.DoesNotContain("secret credential", all);
+        Assert.Contains("Request failed with status 503", all);
     }
 
     public sealed record ProbeRequest(string Name);
